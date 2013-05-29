@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QEDEQ
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.qedeq.org/0_04_07/xml/qedeq.xsd">
+  <HEADER email="mime@qedeq.org">
+    <SPECIFICATION name="qedeq_sample4" ruleVersion="0.01.00">
+      <LOCATIONS>
+        <LOCATION value="http://www.qedeq.org/0_04_07/sample" />
+      </LOCATIONS>
+    </SPECIFICATION>
+    <TITLE>
+      <LATEX language="en">
+        <![CDATA[
+          Search for simple formal proofs.
+        ]]>
+      </LATEX>
+    </TITLE>
+    <ABSTRACT>
+      <LATEX language="en">
+        <![CDATA[
+          Here we have some propositional calculus axioms and some propositions. Initially these propositions have no formal proofs. By using our proof finder we get such formal proofs.
+        ]]>
+      </LATEX>
+    </ABSTRACT>
+    <AUTHORS>
+      <AUTHOR email="michael@meyling.com">
+        <NAME>
+          <LATEX language="en">
+            <![CDATA[
+              Michael Meyling
+            ]]>
+          </LATEX>
+        </NAME>
+      </AUTHOR>
+    </AUTHORS>
+  </HEADER>
+  <CHAPTER>
+    <TITLE>
+      <LATEX language="en">
+        <![CDATA[
+          First
+        ]]>
+      </LATEX>
+    </TITLE>
+    <INTRODUCTION>
+      <LATEX language="en">
+        <![CDATA[
+          After presenting some axioms we present some propositions.
+        ]]>
+      </LATEX>
+    </INTRODUCTION>
+    <SECTION>
+      <TITLE>
+        <LATEX language="en">
+          <![CDATA[
+            Axioms
+          ]]>
+        </LATEX>
+      </TITLE>
+      <INTRODUCTION>
+        <LATEX language="en">
+          <![CDATA[
+            Here we state our axioms.
+          ]]>
+        </LATEX>
+      </INTRODUCTION>
+      <SUBSECTIONS>
+        <NODE id="axiom:disjunction_idempotence">
+          <NAME>
+            <LATEX language="en">
+              <![CDATA[
+                axiom of disjunction idempotence
+              ]]>
+            </LATEX>
+          </NAME>
+          <TITLE>
+            <LATEX language="en">
+              <![CDATA[
+                Disjunction Idempotence
+              ]]>
+            </LATEX>
+          </TITLE>
+          <AXIOM>
+            <FORMULA>
+              <IMPL>
+                <OR>
+                  <PREDVAR id="A"/>
+                  <PREDVAR id="A"/>
+                </OR>
+                <PREDVAR id="A"/>
+              </IMPL>
+            </FORMULA>
+          </AXIOM>
+        </NODE>
+        <NODE id="axiom:disjunction_weakening">
+          <NAME>
+            <LATEX language="en">
+              <![CDATA[
+                axiom of weakening
+              ]]>
+            </LATEX>
+          </NAME>
+          <TITLE>
+            <LATEX language="en">
+              <![CDATA[
+                Axiom of Weakening
+              ]]>
+            </LATEX>
+          </TITLE>
+          <AXIOM>
+            <FORMULA>
+              <IMPL>
+                <PREDVAR id="A"/>
+                <OR>
+                  <PREDVAR id="A"/>
+                  <PREDVAR id="B"/>
+                </OR>
+              </IMPL>
+            </FORMULA>
+          </AXIOM>
+        </NODE>
+        <NODE id="axiom:disjunction_commutative">
+          <NAME>
+            <LATEX language="en">
+              <![CDATA[
+                commutativity of the disjunction
+              ]]>
+            </LATEX>
+          </NAME>
+          <TITLE>
+            <LATEX language="en">
+              <![CDATA[
+                Commutativity of the Disjunction
+              ]]>
+            </LATEX>
+          </TITLE>
+          <AXIOM>
+            <FORMULA>
+              <IMPL>
+                <OR>
+                  <PREDVAR id="A"/>
+                  <PREDVAR id="B"/>
+                </OR>
+                <OR>
+                  <PREDVAR id="B"/>
+                  <PREDVAR id="A"/>
+                </OR>
+              </IMPL>
+            </FORMULA>
+          </AXIOM>
+        </NODE>
+        <NODE id="axiom:disjunction_addition">
+          <NAME>
+            <LATEX language="en">
+              <![CDATA[
+                axiom of disjunctive addition
+              ]]>
+            </LATEX>
+          </NAME>
+          <TITLE>
+            <LATEX language="en">
+              <![CDATA[
+                Disjunctive Addition
+              ]]>
+            </LATEX>
+          </TITLE>
+          <AXIOM>
+            <FORMULA>
+              <IMPL>
+                <IMPL>
+                  <PREDVAR id="A"/>
+                  <PREDVAR id="B"/>
+                </IMPL>
+                <IMPL>
+                  <IMPL>
+                    <PREDVAR id="C"/>
+                    <PREDVAR id="A"/>
+                  </IMPL>
+                  <IMPL>
+                    <PREDVAR id="C"/>
+                    <PREDVAR id="B"/>
+                  </IMPL>
+                </IMPL>
+              </IMPL>
+            </FORMULA>
+          </AXIOM>
+        </NODE>
+        <NODE id="rule:addProvenFormula">
+          <NAME>
+            <LATEX language="en">
+              <![CDATA[
+                add true formula
+              ]]>
+            </LATEX>
+          </NAME>
+          <TITLE>
+            <LATEX language="en">
+              <![CDATA[
+                Add true formula
+              ]]>
+            </LATEX>
+          </TITLE>
+          <RULE name="Add" version="0.01.00">
+            <DESCRIPTION>
+              <LATEX language="en">
+                <![CDATA[
+                  Addition of an axiom, definition or already proven formula. We have to reference to the location of a true formula.
+                ]]>
+              </LATEX>
+            </DESCRIPTION>
+          </RULE>
+        </NODE>
+        <NODE id="rule:modusPonens">
+          <NAME>
+            <LATEX language="en">
+              <![CDATA[
+                modus ponens
+              ]]>
+            </LATEX>
+          </NAME>
+          <TITLE>
+            <LATEX language="en">
+              <![CDATA[
+                Modus Ponens\index{Modus Ponens}
+              ]]>
+            </LATEX>
+            <LATEX language="de">
+              <![CDATA[
+                Abtrennung, Modus Ponens\index{Modus Ponens}\index{Abtrennungsregel}
+              ]]>
+            </LATEX>
+          </TITLE>
+          <RULE name="MP" version="0.01.00">
+            <DESCRIPTION>
+              <LATEX language="en">
+                <![CDATA[
+                  If both formulas $\alpha$ and $\alpha \rightarrow \beta$ are true, then we can conclude that $\beta$ is true as well.
+                ]]>
+              </LATEX>
+            </DESCRIPTION>
+          </RULE>
+        </NODE>
+        <NODE id="rule:substPred">
+          <NAME>
+            <LATEX language="en">
+              <![CDATA[
+                replace predicate variable
+              ]]>
+            </LATEX>
+          </NAME>
+          <TITLE>
+            <LATEX language="en">
+              <![CDATA[
+                Replace Predicate Variable
+              ]]>
+            </LATEX>
+          </TITLE>
+          <RULE name="SubstPred" version="0.01.00">
+            <DESCRIPTION>
+              <LATEX language="en">
+                <![CDATA[
+                  Let $\alpha$ be a true formula that contains a predicate variable $p$ of arity $n$, let $x_1$, \ldots, $x_n$ be pairwise different subject variables and let $\beta(x_1, \ldots, x_n)$ be a formula where $x_1$, \ldots, $x_n$ are not bound. The formula $\beta(x_1, \ldots, x_n)$ must not contain all $x_1$, \ldots, $x_n$ as free subject variables. Furthermore it can also have other subject variables either free or bound.
+                  
+                  If the following conditions are fulfilled, then a replacement of all occurrences of $p(t_1, \ldots, t_n)$ each with appropriate terms $t_1$, \ldots, $t_n$ in $\alpha$ by $\beta(t_1, \ldots, t_n)$ results in another true formula.
+
+                  \begin{itemize}
+
+                  \item
+                  the free variables of $\beta(x_1, \ldots, x_n)$ without $x_1$, \ldots, $x_n$ do not occur as bound variables in $\alpha$ 
+                  
+                  \item 
+                  each occurrence of $p(t_1, \ldots, t_n)$ in $\alpha$ contains no bound variable of $\beta(x_1, \ldots, x_n)$ 
+
+                  \item
+                  the result of the substitution is a well-formed formula
+
+                  \end{itemize}
+                ]]>
+              </LATEX>
+            </DESCRIPTION>
+          </RULE>
+        </NODE>
+      </SUBSECTIONS>
+    </SECTION>
+    <SECTION>
+      <TITLE>
+        <LATEX language="en">
+          <![CDATA[
+            One
+          ]]>
+        </LATEX>
+      </TITLE>
+      <INTRODUCTION>
+        <LATEX language="en">
+          <![CDATA[
+            Here we start.
+          ]]>
+        </LATEX>
+      </INTRODUCTION>
+      <SUBSECTIONS>
+        <NODE id="proposition:one" level="formal">
+          <THEOREM>
+            <FORMULA>
+              <IMPL>
+                <PREDVAR id="A"/>
+                <PREDVAR id="A"/>
+              </IMPL>
+            </FORMULA>
+          </THEOREM>
+        </NODE>
+        <NODE id="proposition:two" level="formal">
+          <THEOREM>
+            <FORMULA>
+              <IMPL>
+                <PREDVAR id="A"/>
+                <OR>
+                  <PREDVAR id="B"/>
+                  <PREDVAR id="A"/>
+                </OR>
+              </IMPL>
+            </FORMULA>
+          </THEOREM>
+        </NODE>
+        <NODE id="proposition:three" level="formal">
+          <THEOREM>
+            <FORMULA>
+              <IMPL>
+                <OR>
+                  <OR>
+                    <PREDVAR id="A"/>
+                    <PREDVAR id="B"/>
+                  </OR>
+                  <OR>
+                    <PREDVAR id="C"/>
+                    <PREDVAR id="D"/>
+                  </OR>
+                </OR>
+                <OR>
+                  <OR>
+                    <PREDVAR id="C"/>
+                    <PREDVAR id="D"/>
+                  </OR>
+                  <OR>
+                    <PREDVAR id="A"/>
+                    <PREDVAR id="B"/>
+                  </OR>
+                </OR>
+              </IMPL>
+            </FORMULA>
+            <FORMAL_PROOF>
+              <LINES>
+                <L label="1">
+                  <FORMULA>
+                    <IMPL>
+                      <OR>
+                        <PREDVAR id="A"/>
+                        <PREDVAR id="B"/>
+                      </OR>
+                      <OR>
+                        <PREDVAR id="B"/>
+                        <PREDVAR id="A"/>
+                      </OR>
+                    </IMPL>
+                  </FORMULA>
+                  <ADD ref="axiom:disjunction_commutative"/>
+                </L>
+                <L label="2">
+                  <FORMULA>
+                    <IMPL>
+                      <OR>
+                        <PREDVAR id="A"/>
+                        <OR>
+                          <PREDVAR id="C"/>
+                          <PREDVAR id="D"/>
+                        </OR>
+                      </OR>
+                      <OR>
+                        <OR>
+                          <PREDVAR id="C"/>
+                          <PREDVAR id="D"/>
+                        </OR>
+                        <PREDVAR id="A"/>
+                      </OR>
+                    </IMPL>
+                  </FORMULA>
+                  <SUBST_PREDVAR ref="1">
+                    <PREDVAR id="B"/>
+                    <FORMULA>
+                      <OR>
+                        <PREDVAR id="C"/>
+                        <PREDVAR id="D"/>
+                      </OR>
+                    </FORMULA>
+                  </SUBST_PREDVAR>
+                </L>
+                <L label="3">
+                  <FORMULA>
+                    <IMPL>
+                      <OR>
+                        <OR>
+                          <PREDVAR id="A"/>
+                          <PREDVAR id="B"/>
+                        </OR>
+                        <OR>
+                          <PREDVAR id="C"/>
+                          <PREDVAR id="D"/>
+                        </OR>
+                      </OR>
+                      <OR>
+                        <OR>
+                          <PREDVAR id="C"/>
+                          <PREDVAR id="D"/>
+                        </OR>
+                        <OR>
+                          <PREDVAR id="A"/>
+                          <PREDVAR id="B"/>
+                        </OR>
+                      </OR>
+                    </IMPL>
+                  </FORMULA>
+                  <SUBST_PREDVAR ref="2">
+                    <PREDVAR id="A"/>
+                    <FORMULA>
+                      <OR>
+                        <PREDVAR id="A"/>
+                        <PREDVAR id="B"/>
+                      </OR>
+                    </FORMULA>
+                  </SUBST_PREDVAR>
+                </L>
+              </LINES>
+            </FORMAL_PROOF>
+          </THEOREM>
+        </NODE>
+      </SUBSECTIONS>
+    </SECTION>
+  </CHAPTER>
+</QEDEQ>

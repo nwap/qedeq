@@ -1,0 +1,675 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- author: Michael Meyling -->
+<!-- project: Hilbert II -->
+
+<!-- This is the Ant build file for building the Se release of project Hilbert II -->
+<project name="releaseBuild" default="all" basedir="../..">
+
+    <description>
+        Release Build for Hilbert II.   
+    </description>
+    
+    <!-- test if location resolving is fully working -->
+    <property name="qedeq.test.xmlLocationFailures"   value="true"/>
+
+    <!-- get content of findbugs environment variable -->
+    <property environment="env" />
+    <property name="findbugs.home" value="${env.FINDBUGS_HOME}" />
+    
+    <import file="baseMacros.xml" />
+
+    <!-- set global properties for this build -->
+    <property name="qedeq.test.fast"       value="false" /> <!-- test all methods, even slow ones -->
+    <property file="${basedir}/QedeqBuild/scripts/build.properties" />
+    <property name="qedeq.lib"             value="${basedir}/QedeqLib" />
+    <property name="qedeq.gen"             value="${basedir}/../../qedeq_gen" />
+    <property name="qedeq.directory"       value="qedeq" />
+    <property name="qedeq.dest"            value="${basedir}/../../qedeq_gen/release/ant/${qedeq.directory}" />
+    <property name="qedeq.dest.module"     value="${basedir}/../../qedeq_gen/release/ant/modules" />
+    <property name="qedeq.dist"            value="${basedir}/../../qedeq_gen/release/ant/dist" />
+    <property name="qedeq.temp"            value="${basedir}/../../qedeq_gen/release/ant/temp" />
+    <property name="qedeq.webstart"        value="${basedir}/../../qedeq_gen/release/ant/webstart" />
+    <property name="qedeq.resources"       value="${basedir}/QedeqBuild/resources" />
+
+    <!-- Java2Html - java2html.de -->
+    <taskdef name="java2html" classname="de.java2html.anttasks.Java2HtmlTask"
+        classpath="${qedeq.lib}/java2html.jar" />
+ <!--
+currently in ants classpath
+    <taskdef name="junit" class="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" 
+        classpathref="classpath.common" />   
+-->    
+ 
+<!-- we add the xerces libraries, so that parsing works for JDK >= 1.5 also -->
+    <taskdef name="xsddoc" classname="net.sf.xframe.xsddoc.Task" classpath="${qedeq.lib}/xsddoc.jar:${qedeq.lib}/xercesImpl.jar:${qedeq.lib}/xalan.jar:${qedeq.lib}/xml-apis.jar" />
+
+    <taskdef resource="checkstyletask.properties" classpath="${qedeq.lib}/checkstyle-all-5.1.jar" />
+
+    <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="${qedeq.lib}/findbugs-ant.jar" />
+
+<!--    <taskdef resource="cloverlib.xml" classpath="${qedeq.lib}/clover-2.3.1.jar" /> -->
+    <taskdef resource="cloverlib.xml" classpath="${qedeq.lib}/clover-3.1.10.jar" />
+
+<!--
+currently in ants classpath
+    <taskdef name="jdepend" classname="org.apache.tools.ant.taskdefs.optional.jdepend.JDependTask" classpath="${qedeq.lib}/jdepend-2.9.jar" />
+-->
+
+    <tstamp>
+        <format property="qedeq.se.timestamp" pattern="yyyy-MM-dd HH:mm:ss" timezone="GMT"/>
+        <format property="qedeq.se.buildId" pattern="yyyyMMddHHmmss" timezone="GMT"/>
+    </tstamp>
+
+    <filterset id="qedeq_filter_dev" begintoken="@" endtoken="@">
+        <filter token="QEDEQ_VERSION"         value="${qedeq.release.version}" />
+        <filter token="QEDEQ_CODENAME"        value="${qedeq.release.codename}" />
+        <filter token="QEDEQ_DIRECTORY"       value="${qedeq.release.directory}" />
+        <filter token="QEDEQ_TIMESTAMP"       value="${qedeq.se.timestamp}" />
+        <filter token="QEDEQ_BUILD_ID"        value="${qedeq.se.buildId}" />
+        <filter token="QEDEQ_BUILD_DEV_BEGIN" value="" />
+        <filter token="QEDEQ_BUILD_DEV_END"   value="" />
+        <filter token="trace_file_path"       value="./log/trace.txt" />
+    </filterset>
+
+    <filterset id="qedeq_filter" begintoken="@" endtoken="@">
+        <filter token="QEDEQ_VERSION"         value="${qedeq.release.version}" />
+        <filter token="QEDEQ_CODENAME"        value="${qedeq.release.codename}" />
+        <filter token="QEDEQ_DIRECTORY"       value="${qedeq.release.directory}" />
+        <filter token="QEDEQ_TIMESTAMP"       value="${qedeq.se.timestamp}" />
+        <filter token="QEDEQ_BUILD_ID"        value="${qedeq.se.buildId}" />
+        <filter token="QEDEQ_BUILD_DEV_BEGIN" value="&lt;!-- only for development release" />
+        <filter token="QEDEQ_BUILD_DEV_END"   value="--&gt;" />
+        <filter token="trace_file_path"       value="./log/trace.txt" />
+    </filterset>
+
+    <path id="classpath.lib">
+        <pathelement location="${qedeq.lib}/junit.jar"/>
+        <pathelement location="${qedeq.lib}/xercesImpl.jar" />
+        <pathelement location="${qedeq.lib}/xml-apis.jar" />
+        <pathelement location="${qedeq.lib}/xalan.jar" />
+        <pathelement location="${qedeq.lib}/commons-io-1.4.jar" />
+        <pathelement location="${qedeq.lib}/commons-lang-2.4.jar" />
+        <pathelement location="${qedeq.lib}/commons-logging-1.1.1.jar" />
+        <pathelement location="${qedeq.lib}/commons-httpclient-3.1.jar" />
+        <pathelement location="${qedeq.lib}/commons-codec-1.3.jar" />
+        <pathelement location="${qedeq.lib}/log4j-1.2.14.jar" />
+        <pathelement location="${qedeq.lib}/forms-1.1.0.jar" />
+        <pathelement location="${qedeq.lib}/looks-2.1.4.jar" />
+<!--        <pathelement location="${qedeq.lib}/clover-2.3.1.jar" /> -->
+        <pathelement location="${qedeq.lib}/clover-3.1.10.jar" />
+        <pathelement location="${qedeq.lib}/jh-2.0.5.jar" />
+        <pathelement location="${qedeq.lib}/jdepend-2.9.jar" />
+    </path>
+    
+    <path id="classpath.common">
+        <path refid="classpath.lib" ></path>     
+        <pathelement location="${qedeq.dest.module}/QedeqBase/target/classes" />
+        <pathelement location="${qedeq.dest.module}/QedeqBase/src/main/resources" />
+        <pathelement location="${qedeq.dest.module}/QedeqBase/src/test/resources" />
+        <pathelement location="${qedeq.dest.module}/QedeqBase/target/test-classes" />
+        <pathelement location="${qedeq.dest.module}/QedeqKernelSe/target/classes" />
+        <pathelement location="${qedeq.dest.module}/QedeqKernelSe/src/main/resources" />
+        <pathelement location="${qedeq.dest.module}/QedeqKernelSe/src/test/resources" />
+        <pathelement location="${qedeq.dest.module}/QedeqKernelSe/target/test-classes" />
+    	<!-- because of the doubled ControlVisitor class we must first include the test classes. -->
+        <pathelement location="${qedeq.dest.module}/QedeqKernelBo/target/test-classes" />
+        <pathelement location="${qedeq.dest.module}/QedeqKernelBo/target/classes" />
+        <pathelement location="${qedeq.dest.module}/QedeqKernelBo/src/main/resources" />
+        <pathelement location="${qedeq.dest.module}/QedeqKernelBo/src/test/resources" />
+        <pathelement location="${qedeq.dest.module}/QedeqKernelXml/target/classes" />
+        <pathelement location="${qedeq.dest.module}/QedeqKernelXml/src/main/resources" />
+        <pathelement location="${qedeq.dest.module}/QedeqKernelXml/src/test/resources" />
+        <pathelement location="${qedeq.dest.module}/QedeqKernelXml/target/test-classes" />
+        <pathelement location="${qedeq.dest.module}/qedeq_gui_se/target/classes" />
+        <pathelement location="${qedeq.dest.module}/qedeq_gui_se/src/main/resources" />
+    </path>   
+    <path id="classpath.aggregate">
+        <path refid="classpath.lib" ></path>     
+        <pathelement location="${qedeq.dest.module}/qedeq_kernel/target/classes" />
+        <pathelement location="${qedeq.dest.module}/qedeq_kernel/src/main/resources" />
+        <pathelement location="${qedeq.dest.module}/qedeq_kernel/src/test/resources" />
+        <pathelement location="${qedeq.dest.module}/qedeq_kernel/target/test-classes" />
+        <pathelement location="${qedeq.dest.module}/qedeq_gui_se/target/classes" />
+        <pathelement location="${qedeq.dest.module}/qedeq_gui_se/src/main/resources" />
+    </path>
+
+    <target name="init">
+        <echo>
+            version=  ${qedeq.release.version}
+            code name=${qedeq.release.codename}
+            directory=${qedeq.release.directory}
+            timestamp=${qedeq.se.timestamp}
+            buildId=  ${qedeq.se.buildId}
+        </echo>
+        <echoproperties />
+    </target>
+   
+    <target name="clean">
+        <delete dir="${qedeq.dest}" failonerror="true" />
+        <mkdir dir="${qedeq.dest}" />
+        <delete dir="${qedeq.dest.module}" failonerror="true" />
+        <mkdir dir="${qedeq.dest.module}" />
+        <delete dir="${qedeq.dist}" failonerror="true"/>
+        <mkdir dir="${qedeq.dist}" />
+        <delete dir="${qedeq.temp}" failonerror="true" />
+        <mkdir dir="${qedeq.temp}"/>
+        <delete dir="${qedeq.dest.module}" failonerror="true" />
+        <mkdir dir="${qedeq.dest.module}"/>
+        <clean name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase" />
+        <clean name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe" />
+        <clean name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo" />
+        <clean name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" />
+        <clean name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel" />
+        <clean name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_gui_se" />
+    </target>
+
+    <target name="source" depends="clean">
+        <copySource     name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase" />
+        <copyTestSource name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase"/>
+        <copySource     name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe" />
+        <copyTestSource name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe" />
+        <copySource     name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo" />
+        <copyTestSource name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo" />
+        <copySource     name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" />
+        <copyTestSource name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" />
+        <!-- get QedeqKernelBoTest data files also in QedeqKernelXmlTest -->
+        <antcall target="copyTestData">
+            <param name="QedeqModule" value="QedeqKernelBo"/>
+            <param name="QedeqDest" value="${qedeq.dest.module}/QedeqKernelXml"/>
+        </antcall>   
+        <copySource     name="QedeqGuiSe"     dir="${qedeq.dest.module}/qedeq_gui_se" />
+        
+        <!-- generate complete kernel sources out of all sub modules -->   
+        <mkdir dir="${qedeq.dest.module}/qedeq_kernel/src" />
+        <copy todir="${qedeq.dest.module}/qedeq_kernel" >
+          <fileset dir="${qedeq.dest.module}/QedeqBase" />
+          <fileset dir="${qedeq.dest.module}/QedeqKernelSe" />
+          <fileset dir="${qedeq.dest.module}/QedeqKernelBo" />
+          <fileset dir="${qedeq.dest.module}/QedeqKernelXml" />
+        </copy>
+    </target>  
+    
+    <target name="compile" description="compiles all modules" depends="source" >
+        <compile     name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase"      classpath="classpath.common" />
+        <compile     name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe"  classpath="classpath.common" />
+        <compile     name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo"  classpath="classpath.common" />
+        <compile     name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" classpath="classpath.common" />
+        <compile     name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"   classpath="classpath.common" />
+        <compile     name="qedeq_gui_se"   dir="${qedeq.dest.module}/qedeq_gui_se"   classpath="classpath.common" />
+    </target>
+    
+    <target name="testCompile" description="compile all test classes" depends="compile">
+        <testCompile name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase"      classpath="classpath.common" />
+        <testCompile name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe"  classpath="classpath.common" />
+        <testCompile name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo"  classpath="classpath.common" />
+        <testCompile name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" classpath="classpath.common" />
+        <testCompile name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"   classpath="classpath.aggregate" />
+    </target>
+        
+    <target name="test" description="run all tests" depends="testCompile">
+        <cloverTest  name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase"      classpath="classpath.common"    fast="${qedeq.test.fast}"/>
+        <cloverTest  name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe"  classpath="classpath.common"    fast="${qedeq.test.fast}"/>
+        <cloverTest  name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo"  classpath="classpath.common"    fast="${qedeq.test.fast}"/>
+        <cloverTest  name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" classpath="classpath.common"    fast="${qedeq.test.fast}"/>
+        <cloverTest  name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"   classpath="classpath.aggregate" fast="${qedeq.test.fast}"/>
+    </target>
+ 
+    <target name="pest" description="run all pest tests" depends="test">
+        <pest        name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase"      classpath="classpath.common"    fast="${qedeq.test.fast}"/>
+        <pest        name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe"  classpath="classpath.common"    fast="${qedeq.test.fast}"/>
+        <pest        name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo"  classpath="classpath.common"    fast="${qedeq.test.fast}"/>
+        <pest        name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" classpath="classpath.common"    fast="${qedeq.test.fast}"/>
+        <pest        name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"   classpath="classpath.aggregate" fast="${qedeq.test.fast}"/>
+    </target>
+        
+    <target name="sourceHtml" description="generate HTML for java" depends="test">
+        <sourceHtml  name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase"      />
+        <sourceHtml  name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe"  />
+        <sourceHtml  name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo"  />
+        <sourceHtml  name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" />
+        <sourceHtml  name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"   />
+        <sourceHtml  name="qedeq_gui_se"   dir="${qedeq.dest.module}/qedeq_gui_se"   />
+    </target>
+        
+    <target name="checkstyle" description="run checkstyle" depends="">
+        <checkstyleReport  name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase"      classpath="classpath.common"    checks="${qedeq.resources}/checkstyle/QedeqFormalChecks2.xml" style="${qedeq.resources}/checkstyle/checkstyle-no-frames-detailed.xsl" />
+        <checkstyleReport  name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe"  classpath="classpath.common"    checks="${qedeq.resources}/checkstyle/QedeqFormalChecks2.xml" style="${qedeq.resources}/checkstyle/checkstyle-no-frames-detailed.xsl" />
+        <checkstyleReport  name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo"  classpath="classpath.common"    checks="${qedeq.resources}/checkstyle/QedeqFormalChecks2.xml" style="${qedeq.resources}/checkstyle/checkstyle-no-frames-detailed.xsl" />
+        <checkstyleReport  name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" classpath="classpath.common"    checks="${qedeq.resources}/checkstyle/QedeqFormalChecks2.xml" style="${qedeq.resources}/checkstyle/checkstyle-no-frames-detailed.xsl" />
+        <checkstyleReport  name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"   classpath="classpath.aggregate" checks="${qedeq.resources}/checkstyle/QedeqFormalChecks2.xml" style="${qedeq.resources}/checkstyle/checkstyle-no-frames-detailed.xsl" /> 
+        <checkstyleReport  name="qedeq_gui_se"   dir="${qedeq.dest.module}/qedeq_gui_se"   classpath="classpath.aggregate" checks="${qedeq.resources}/checkstyle/QedeqFormalChecks2.xml" style="${qedeq.resources}/checkstyle/checkstyle-no-frames-detailed.xsl" />
+    </target>
+                
+    <target name="findbugs" description="run findbugs" depends="">
+        <findbugsReport  name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase"      classpath="classpath.common"    excludeFilter="${qedeq.resources}/findbugs/excludeFilter.xml" style="${qedeq.resources}/findbugs/default.xsl"/>
+        <findbugsReport  name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe"  classpath="classpath.common"    excludeFilter="${qedeq.resources}/findbugs/excludeFilter.xml" style="${qedeq.resources}/findbugs/default.xsl"/>
+        <findbugsReport  name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo"  classpath="classpath.common"    excludeFilter="${qedeq.resources}/findbugs/excludeFilter.xml" style="${qedeq.resources}/findbugs/default.xsl"/>
+        <findbugsReport  name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" classpath="classpath.common"    excludeFilter="${qedeq.resources}/findbugs/excludeFilter.xml" style="${qedeq.resources}/findbugs/default.xsl"/>
+        <findbugsReport  name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"   classpath="classpath.aggregate" excludeFilter="${qedeq.resources}/findbugs/excludeFilter.xml" style="${qedeq.resources}/findbugs/default.xsl"/> 
+        <findbugsReport  name="qedeq_gui_se"   dir="${qedeq.dest.module}/qedeq_gui_se"   classpath="classpath.aggregate" excludeFilter="${qedeq.resources}/findbugs/excludeFilter.xml" style="${qedeq.resources}/findbugs/default.xsl"/>
+    </target>
+
+    <target name="jdepend" description="run jdepend" depends="">
+        <jdependReport  name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"   classpath="${qedeq.dest.module}/qedeq_kernel/target/classes" />
+        <jdependReport  name="qedeq_gui_se"   dir="${qedeq.dest.module}/qedeq_gui_se"   classpath="${qedeq.dest.module}/qedeq_gui_se/target/classes" />
+    </target>
+
+    <target name="package" description="generate jars" depends="compile">
+        <delete dir="${qedeq.temp}" />
+        <mkdir dir="${qedeq.temp}" />
+        <copy todir="${qedeq.temp}">
+          <fileset dir="${qedeq.resources}/jar" includes="readme.txt,manifest.txt,gpl.txt" />
+          <fileset dir="${qedeq.resources}/licenses" includes="gpl.txt" />
+          <filterset refid="qedeq_filter_dev" />        
+        </copy>
+        <fileset id="qedeq.jar.includes" dir="${qedeq.temp}" 
+            includes="readme.txt,gpl.txt" />
+        <package     name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"
+                     version="${qedeq.release.version}"   
+                     manifest="${qedeq.temp}/manifest.txt" includes="qedeq.jar.includes" />
+        
+        <package     name="qedeq_gui_se"   dir="${qedeq.dest.module}/qedeq_gui_se"
+                     version="${qedeq.release.version}"
+                     manifest="${qedeq.temp}/manifest.txt" includes="qedeq.jar.includes" />
+    </target>
+
+    <target name="makePdfs" description="create PDF files out of certain *.tex test results" depends="test">
+        <property name="qedeq.texdir" value="${qedeq.dest.module}/QedeqKernelBo/target/test-outdir/doc" />
+        <makePdf dir="${qedeq.texdir}/math"    file="qedeq_logic_v1_en" />
+        <makePdf dir="${qedeq.texdir}/math"    file="qedeq_logic_v1_de" />
+        <makePdf dir="${qedeq.texdir}/math"    file="qedeq_set_theory_v1_en" />
+        <makePdf dir="${qedeq.texdir}/math"    file="qedeq_set_theory_v1_de" />
+        <makePdf dir="${qedeq.texdir}/math"    file="qedeq_formal_logic_v1_en" />
+        <makePdf dir="${qedeq.texdir}/math"    file="qedeq_formal_logic_v1_de" />
+        <makePdf dir="${qedeq.texdir}/project" file="qedeq_basic_concept_en" />
+        <makePdf dir="${qedeq.texdir}/project" file="qedeq_basic_concept_de" />
+        <makePdf dir="${qedeq.texdir}/project" file="qedeq_logic_language_en" />
+        <makePdf dir="${qedeq.texdir}/project" file="qedeq_development_concept_en" />
+    </target>
+                            
+    <target name="doc" description="generate project documentation" depends="source,test,makePdfs">
+        <!-- generate XSD documentation -->   
+        <delete dir="${qedeq.dest}/xml" failonerror="true"/>
+        <mkdir dir="${qedeq.dest}/xml" />
+        <mkdir dir="${qedeq.dest}/xml/qedeq"/>
+        <xsddoc file="${qedeq.dest.module}/qedeq_kernel/src/main/resources/org/qedeq/kernel/xml/schema/qedeq.xsd"
+                 out="${qedeq.dest}/xml/qedeq"
+            doctitle="XML QEDEQ Schema "
+             verbose="false"/>
+        <attrib archive="true">
+          <fileset dir="${qedeq.dest}/xml/qedeq" includes="**/*" />
+        </attrib>
+        <xslt basedir="${qedeq.dest.module}/qedeq_kernel/src/main/resources/org/qedeq/kernel/xml/schema" destdir="${qedeq.dest}/xml"
+                extension=".html" style="${qedeq.resources}/xsd/xs3p.xsl">
+            <param name="searchImportedSchemas" expression="true"/>
+            <param name="searchIncludedSchemas" expression="true"/>
+            <param name="linksFile" expression="${qedeq.resources}/xsd/links.xml"/>
+            <include name="*.xsd"/>
+        </xslt>
+        <copy todir="${qedeq.dest}/xml">
+            <fileset dir="${qedeq.dest.module}/qedeq_kernel/src/main/resources/org/qedeq/kernel/xml/schema/">
+                <include name="*.xsd"/>
+            </fileset>
+        </copy>
+
+        <!-- add ressources -->
+        <delete dir="${qedeq.dest}/res" failonerror="true"/>
+        <mkdir dir="${qedeq.dest}/res" />
+        <copy todir="${qedeq.dest}/res">
+          <fileset dir="${qedeq.resources}/clover"
+            includes="*.gif"
+          >
+          </fileset>
+        </copy>
+        
+    	<!-- add documentation -->
+        <delete dir="${qedeq.dest}/doc" failonerror="true"/>
+        <mkdir dir="${qedeq.dest}/doc" />
+        <mkdir dir="${qedeq.dest}/doc/project" />
+        <copy todir="${qedeq.dest}/doc/project">
+          <fileset dir="${qedeq.resources}"
+            includes="changes.txt"
+          >
+          </fileset>
+          <filterset refid="qedeq_filter_dev" />
+        </copy>
+        <copy todir="${qedeq.dest}/doc">
+          <fileset dir="${qedeq.dest.module}/QedeqKernelBo/target/test-outdir/doc"
+            includes="math/**.xml,math/**.tex,math/**.pdf,math/**.txt,project/**.xml,project/**.tex,project/**.pdf,project/**.txt"
+            excludes="**/qedeq_sample*"
+          >
+          </fileset>
+        </copy>
+        <copy todir="${qedeq.dest}/doc/math">
+          <fileset dir="${basedir}/QedeqDoc/math"
+            includes="axiomatic_set_theory.txt"
+          >
+    <!-- outdated:        includes="mengenlehre_1.tex,mengenlehre_1.pdf,axiomatic_set_theory.txt" -->
+          </fileset>
+        </copy>
+        <copy todir="${qedeq.dest}/doc/project">
+          <fileset dir="${basedir}/QedeqDoc/project"
+            includes="projektbeschreibung.tex,projektbeschreibung.pdf"
+          >
+          </fileset>
+        </copy>
+    	<delete file="${qedeq.dest}/index.html" />
+        <copy todir="${qedeq.dest}">
+          <fileset dir="${qedeq.resources}"
+            includes="index.html"
+          >
+          </fileset>
+          <filterset refid="qedeq_filter_dev" />
+        </copy>
+    </target>
+
+    <target name="assemble" depends="doc,package,test,pest,sourceHtml,checkstyle,findbugs,jdepend">
+        <!-- copy libraries -->   
+        <delete dir="${qedeq.dest}/lib" />
+        <mkdir dir="${qedeq.dest}/lib" />
+        <copy todir="${qedeq.dest}/lib">
+            <!-- fileset file="${qedeq.lib}/xalan.jar" / -->
+            <fileset file="${qedeq.lib}/xercesImpl.jar" />
+            <fileset file="${qedeq.lib}/xml-apis.jar" />
+            <fileset file="${qedeq.lib}/commons-io-1.4.jar" />
+            <fileset file="${qedeq.lib}/commons-lang-2.4.jar" />
+            <fileset file="${qedeq.lib}/commons-logging-1.1.1.jar" />
+            <fileset file="${qedeq.lib}/commons-httpclient-3.1.jar" />
+            <fileset file="${qedeq.lib}/commons-codec-1.3.jar" />
+            <fileset file="${qedeq.lib}/log4j-1.2.14.jar" />
+            <fileset file="${qedeq.lib}/forms-1.1.0.jar" />
+            <fileset file="${qedeq.lib}/looks-2.1.4.jar" />
+            <fileset file="${qedeq.lib}/jh-2.0.5.jar" />
+            <fileset file="${qedeq.dest.module}/qedeq_kernel/qedeq_kernel-${qedeq.release.version}.jar" />
+            <fileset file="${qedeq.dest.module}/qedeq_gui_se/qedeq_gui_se-${qedeq.release.version}.jar" />
+        </copy>
+       
+        <!-- copy licenses --> 
+        <delete dir="${qedeq.dest}/license"/>
+        <mkdir dir="${qedeq.dest}/license"/>
+        <copy todir="${qedeq.dest}/license">
+            <fileset dir="${qedeq.resources}/licenses" includes="*.html,*license*.txt" />
+            <filterset refid="qedeq_filter_dev" />
+        </copy>
+        <delete dir="${qedeq.dest}/sample"/>
+        <mkdir dir="${qedeq.dest}/sample"/>
+        <copy todir="${qedeq.dest}/sample" flatten="true"> 
+            <fileset dir="${qedeq.dest.module}/QedeqKernelBo/target/test-outdir/doc/"
+                includes="**/*.xml" excludes="**/proof/**"
+            />
+            <fileset dir="${qedeq.dest.module}/QedeqKernelBo/src/test/resources/data"
+                includes="*_error.xml,qedeq_error_sample_*.xml,predlogic.xml,proplogic.xml"
+            />
+            <fileset dir="${basedir}/QedeqDoc/sample/"
+                includes="**/*.xml"
+            />
+        </copy>
+       
+        <!-- copy binaries --> 
+        <delete dir="${qedeq.dest}/bin"/>
+        <mkdir dir="${qedeq.dest}/bin"/>
+        <copy todir="${qedeq.dest}/bin">
+            <fileset dir="${qedeq.resources}/bin/" includes="*.bat,*.sh" excludes="qedeq_se*,xml2*.*"/>
+            <filterset refid="qedeq_filter_dev" />
+        </copy>
+        <copy todir="${qedeq.dest}">
+            <fileset dir="${qedeq.resources}/bin/" includes="qedeq_se*"/>
+            <filterset refid="qedeq_filter_dev" />
+        </copy>
+        <copy todir="${qedeq.dest}">
+            <fileset dir="${qedeq.resources}/pictures" includes="qedeq.png" />
+        </copy>
+     
+        <!-- create log directory -->   
+        <delete dir="${qedeq.dest}/log" />
+        <mkdir dir="${qedeq.dest}/log" />
+
+        <!-- create config directory -->   
+        <delete dir="${qedeq.dest}/config" />
+        <mkdir dir="${qedeq.dest}/config" />
+        <copy todir="${qedeq.dest}/config">
+            <fileset file="${qedeq.dest.module}/qedeq_gui_se/src/main/resources/config/*" 
+                excludes="**/log4j.properties" />
+            <filterset refid="qedeq_filter_dev" />
+        </copy>
+     
+        <!-- create buffer directory -->   
+        <delete dir="${qedeq.dest}/buffer" />
+        <mkdir dir="${qedeq.dest}/buffer" />
+     
+        <!-- create source directory -->
+        <delete dir="${qedeq.dest}/src" failonerror="false"/>
+        <mkdir dir="${qedeq.dest}/src/eclipse" />
+        <copy todir="${qedeq.dest}/src/eclipse">
+            <fileset dir="${basedir}">
+                <include name="QedeqBase/**/*" />
+                <include name="QedeqBaseTest/**/*" />
+                <include name="QedeqKernelSe/**/*" />
+                <include name="QedeqKernelSeTest/**/*" />
+                <include name="QedeqKernelBo/**/*" />
+                <include name="QedeqKernelBoTest/**/*" />
+                <include name="QedeqKernelXml/**/*" />
+                <include name="QedeqKernelXmlTest/**/*" />
+                <include name="QedeqGuiSe/**/*" />
+                <include name="QedeqLib/**/*" />
+                <include name="QedeqBuild/**/*" />
+                <exclude name="*/bin/**/*" />
+                <exclude name="**/trace*.log" />
+            </fileset>
+        </copy>
+        
+        <!-- copy various reports -->
+        <assembleReports  name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase"      />
+        <assembleReports  name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe"  />
+        <assembleReports  name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo"  />
+        <assembleReports  name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" />
+        <assembleReports  name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"   />
+        <assembleReports  name="qedeq_gui_se"   dir="${qedeq.dest.module}/qedeq_gui_se"   />
+
+        <!-- create also maven structure with POM s -->   
+        <delete dir="${qedeq.dest}/src/maven" failonerror="true" />
+        <mkdir dir="${qedeq.dest}/src/maven" />
+        <copy todir="${qedeq.dest}/src/maven">
+            <fileset dir="${qedeq.dest.module}">
+                <include name="qedeq_kernel/src/**/*" />
+                <include name="qedeq_gui_se/src/**/*" />
+            </fileset>
+        </copy>
+        <copy todir="${qedeq.dest}/src/maven/qedeq_kernel" file="${qedeq.resources}/pom/qedeq_kernel/pom.xml"> 
+            <filterset refid="qedeq_filter_dev" />
+        </copy>
+        <copy todir="${qedeq.dest}/src/maven/qedeq_gui_se" file="${qedeq.resources}/pom/qedeq_gui_se/pom.xml">
+            <filterset refid="qedeq_filter_dev" />
+        </copy>
+        <copy todir="${qedeq.dest}/src/maven/qedeq_kernel/target" file="${qedeq.resources}/checkstyle/QedeqFormalChecks.xml" />
+        <fail message="JUnit tests had errors" if="qedeq.junitfailure" />
+    </target>
+             
+    <target name="release" depends="assemble">
+        <!-- Windows file system -->
+        <!-- we exclude "xml/qedeq/*" because xsddoc seems to hold a lock on these files -->
+        <fixcrlf srcdir="${qedeq.dest}"
+            encoding="UTF-8"
+            eol="dos" 
+            eof="remove"
+            includes="**/*.sh,**/*.java,**/*.html,**/*.txt,**/*.properties,**/*.tex,**/*.xml,**/*.xsd"
+            excludes="xml/qedeq/**"   
+        />
+
+        <!-- create Windows development release -->
+        <zip whenempty="create"
+          zipfile="${qedeq.dist}/qedeq_${qedeq.release.version}_dev_win.zip"
+        >
+          <fileset dir="${qedeq.dest}/.." 
+            includes="${qedeq.directory}/**"
+          />
+        </zip>
+
+        <!-- change to common release doc -->
+        <copy todir="${qedeq.dest}" overwrite="true" >
+          <fileset dir="${qedeq.resources}"
+            includes="index.html"
+          >
+          </fileset>
+          <filterset refid="qedeq_filter" />
+        </copy>
+        <fixcrlf srcdir="${qedeq.dest}"
+            encoding="UTF-8"
+            eol="dos" 
+            eof="remove"
+            includes="index.html"
+        />
+
+        <!-- create Windows common release -->
+        <zip whenempty="create"
+          zipfile="${qedeq.dist}/qedeq_${qedeq.release.version}_win.zip"
+        >
+          <fileset dir="${qedeq.dest}/.." 
+            includes="${qedeq.directory}/**"
+            excludes="${qedeq.directory}/src/**"
+          />
+<!-- also maven source files are not included to save space
+          <fileset dir="${qedeq.dest}/.." 
+            includes="${qedeq.directory}/src/maven/qedeq_kernel/**,${qedeq.directory}/src/maven/qedeq_gui_se/**" 
+          />
+-->
+        </zip>
+
+        <!-- Unix file system -->
+        <!-- we exclude "xml/qedeq/*" because xsddoc seems to hold a lock on these files -->
+        <fixcrlf srcdir="${qedeq.dest}"
+          encoding="UTF-8"
+          eol="unix" 
+          eof="remove"
+          includes="**/*.sh,**/*.java,**/*.html,**/*.txt,**/*.properties,**/*.tex,**/*.xml,**/*.xsd"
+          excludes="xml/qedeq/**"   
+        />
+
+        <!-- create Unix common release -->
+        <tar
+          destfile="${qedeq.dist}/qedeq_${qedeq.release.version}_unx.tar.bz2"
+          defaultexcludes="no"
+          compression="bzip2"
+          longfile="gnu"
+        >
+          <tarfileset dir="${qedeq.dest}/.." 
+            includes="${qedeq.directory}/**/*" 
+            excludes="**/*.sh,${qedeq.directory}/src/**" 
+          />
+<!-- also maven source files are not included to save space
+          <tarfileset dir="${qedeq.dest}/.." 
+            includes="${qedeq.directory}/src/maven/qedeq_kernel/**,${qedeq.directory}/src/maven/qedeq_gui_se/**" 
+          />
+-->
+          <tarfileset dir="${qedeq.dest}/.."
+            mode="755"
+            includes="${qedeq.directory}/**/*.sh" 
+            excludes="${qedeq.directory}/src/**" 
+          />
+        </tar>
+
+        <!-- change to development release doc -->
+        <copy todir="${qedeq.dest}" overwrite="true" >
+          <fileset dir="${qedeq.resources}"
+            includes="index.html"
+          >
+          </fileset>
+          <filterset refid="qedeq_filter_dev" />
+        </copy>
+        <fixcrlf srcdir="${qedeq.dest}"
+          encoding="UTF-8"
+          eol="unix" 
+          eof="remove"
+          includes="index.html"
+        />
+
+        <!-- create Unix development release -->
+        <tar
+          destfile="${qedeq.dist}/qedeq_${qedeq.release.version}_dev_unx.tar.bz2"
+          defaultexcludes="no"
+          compression="bzip2"
+          longfile="gnu"
+        >
+          <tarfileset dir="${qedeq.dest}/.." 
+            includes="${qedeq.directory}/**/*" 
+            excludes="**/*.sh" 
+          />
+          <tarfileset dir="${qedeq.dest}/.."
+            mode="755"
+            includes="${qedeq.directory}/**/*.sh" 
+          />
+        </tar>
+
+
+        <!-- mac -->
+    <!--
+        <fixcrlf srcdir="${qedeq.dest}"
+          encoding="UTF-8"
+          eol="mac" 
+          eof="remove"
+          includes="**/*.sh,**/*.java,**/*.html,**/*.txt,**/*.properties,**/*.tex,**/*.xml,**/*.xsd"
+        />
+        <zip whenempty="create"
+          zipfile="${qedeq.dist}/qedeq_${qedeq.release.version}_mac.zip"
+        >
+          <fileset dir="${qedeq.dest}" 
+          />
+        </zip>
+     -->
+      </target>
+        
+    <target name="webstart" depends="assemble" description="sign jars to be able to webstart">
+        <delete dir="${qedeq.webstart}" failonerror="true" />
+        <mkdir dir="${qedeq.webstart}" />
+        <copy todir="${qedeq.webstart}">
+            <fileset dir="${qedeq.dest}/lib" >
+                <include name="qedeq_*.jar" />
+                <include name="commons-*.jar" />
+                <include name="log4j-*.jar" />
+                <include name="forms-*.jar" />
+                <include name="looks-*.jar" />
+            </fileset>
+        </copy>
+        <signjar jar="${qedeq.webstart}/qedeq_kernel-${qedeq.release.version}.jar" alias="qedeqkey"
+            storepass="Iewsss#WhadUg" keystore="${qedeq.resources}/webstart/qedeqKey.bin"/>
+        <signjar jar="${qedeq.webstart}/qedeq_gui_se-${qedeq.release.version}.jar" alias="qedeqkey"
+            storepass="Iewsss#WhadUg" keystore="${qedeq.resources}/webstart/qedeqKey.bin"/>
+        <signjar jar="${qedeq.webstart}/commons-io-1.4.jar" alias="qedeqkey"
+            storepass="Iewsss#WhadUg" keystore="${qedeq.resources}/webstart/qedeqKey.bin"/>
+        <signjar jar="${qedeq.webstart}/commons-lang-2.4.jar" alias="qedeqkey"
+            storepass="Iewsss#WhadUg" keystore="${qedeq.resources}/webstart/qedeqKey.bin"/>
+        <signjar jar="${qedeq.webstart}/commons-logging-1.1.1.jar" alias="qedeqkey"
+            storepass="Iewsss#WhadUg" keystore="${qedeq.resources}/webstart/qedeqKey.bin"/>
+        <signjar jar="${qedeq.webstart}/commons-httpclient-3.1.jar" alias="qedeqkey"
+            storepass="Iewsss#WhadUg" keystore="${qedeq.resources}/webstart/qedeqKey.bin"/>
+        <signjar jar="${qedeq.webstart}/commons-codec-1.3.jar" alias="qedeqkey"
+            storepass="Iewsss#WhadUg" keystore="${qedeq.resources}/webstart/qedeqKey.bin"/>
+        <signjar jar="${qedeq.webstart}/log4j-1.2.14.jar" alias="qedeqkey"
+            storepass="Iewsss#WhadUg" keystore="${qedeq.resources}/webstart/qedeqKey.bin"/>
+        <signjar jar="${qedeq.webstart}/forms-1.1.0.jar" alias="qedeqkey"
+            storepass="Iewsss#WhadUg" keystore="${qedeq.resources}/webstart/qedeqKey.bin"/>
+        <signjar jar="${qedeq.webstart}/looks-2.1.4.jar" alias="qedeqkey"
+            storepass="Iewsss#WhadUg" keystore="${qedeq.resources}/webstart/qedeqKey.bin"/>
+<!-- mime 20100705: the signed XML-Parser Jars and the JHjar have to be replaced by other ones
+             so that it works under an old JNLP version
+-->
+        <copy todir="${qedeq.webstart}" overwrite="true" >
+            <fileset dir="${qedeq.resources}/webstart/lib" />
+        </copy>
+        <copy todir="${qedeq.webstart}">
+            <fileset file="${qedeq.resources}/webstart/qedeq.jnlp" />
+            <filterset refid="qedeq_filter_dev" />
+        </copy>
+        <copy todir="${qedeq.webstart}">
+            <fileset file="${qedeq.resources}/pictures/splash.gif" />
+            <fileset file="${qedeq.resources}/pictures/qedeq.png" />
+        </copy>
+    </target>
+ 
+    <target name="all"
+        depends="init,clean,compile,test,package,doc,assemble,release,webstart">
+    </target>
+
+</project>
+
+

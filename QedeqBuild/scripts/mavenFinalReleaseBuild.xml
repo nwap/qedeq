@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- author: Michael Meyling -->
+<!-- project: Hilbert II -->
+
+<!-- This is the Ant build file for building the final maven repository release via maven -->
+<project name="mavenBuild" default="all" basedir="../..">
+
+    <description>
+        maven build for Hilbert II.   
+    </description>
+
+    <import file="mavenBuild.xml" />
+
+    <target name="clean">
+        <delete dir="${qedeq.dest}" failonerror="true" />
+        <delete dir="${qedeq.dest.module}" failonerror="true" />
+    </target>
+
+
+    <target name="maven" description="start maven build" depends="assemble">
+
+        <!--  Kernel -->
+        <antcall target="execMaven">
+            <param name="PomDir" value="${qedeq.dest}/src/maven/qedeq_kernel"/>
+            <param name="MvnArguments" value="source:jar"/>
+        </antcall>
+        <antcall target="execMaven">
+            <param name="PomDir" value="${qedeq.dest}/src/maven/qedeq_kernel"/>
+            <param name="MvnArguments" value="javadoc:jar"/>
+        </antcall>
+        <antcall target="execMaven">
+            <param name="PomDir" value="${qedeq.dest}/src/maven/qedeq_kernel"/>
+            <param name="MvnArguments" value="-Dmaven.test.skip=true -Dskip.plugins=org.apache.maven.plugins:maven-surefire-plugin,org.apache.maven.plugins:maven-project-info-reports-plugin,org.apache.maven.plugins:maven-jxr-plugin,org.apache.maven.plugins:maven-jxr-plugin,org.apache.maven.plugins:maven-pmd-plugin,org.apache.maven.plugins:maven-javadoc-plugin,org.apache.maven.plugins:maven-checkstyle-plugin install" />
+        </antcall>
+        <antcall target="execSignJars">
+            <param name="PomDir" value="${qedeq.dest}/src/maven/qedeq_kernel"/>
+        </antcall>
+
+        <!--  GUI -->
+        <antcall target="execMaven">
+            <param name="PomDir" value="${qedeq.dest}/src/maven/qedeq_gui_se"/>
+            <param name="MvnArguments" value="source:jar"/>
+        </antcall>
+        <antcall target="execMaven">
+            <param name="PomDir" value="${qedeq.dest}/src/maven/qedeq_gui_se"/>
+            <param name="MvnArguments" value="javadoc:jar"/>
+        </antcall>
+        <antcall target="execMaven">
+            <param name="PomDir" value="${qedeq.dest}/src/maven/qedeq_gui_se"/>
+            <param name="MvnArguments" value="-Dmaven.test.skip=true -Dskip.plugins=org.apache.maven.plugins:maven-surefire-plugin,org.apache.maven.plugins:maven-project-info-reports-plugin,org.apache.maven.plugins:maven-jxr-plugin,org.apache.maven.plugins:maven-jxr-plugin,org.apache.maven.plugins:maven-pmd-plugin,org.apache.maven.plugins:maven-javadoc-plugin,org.apache.maven.plugins:maven-checkstyle-plugin install" />
+        </antcall>
+        <antcall target="execSignJars">
+            <param name="PomDir" value="${qedeq.dest}/src/maven/qedeq_gui_se"/>
+        </antcall>
+     </target>   
+
+</project>
+
+

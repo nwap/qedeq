@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="src" path="/QedeqKernelSe"/>
+	<classpathentry exported="true" kind="lib" path="/QedeqLib/xalan.jar"/>
+	<classpathentry exported="true" kind="lib" path="/QedeqLib/xercesImpl.jar"/>
+	<classpathentry exported="true" kind="lib" path="/QedeqLib/xml-apis.jar"/>
+	<classpathentry exported="true" kind="lib" path="/QedeqLib/junit.jar" sourcepath="/QedeqLib/src/junit_3.8.1_src.jar"/>
+	<classpathentry exported="true" kind="lib" path="/QedeqLib/log4j-1.2.14.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/QedeqBase"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/QedeqKernelBo"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/QedeqBaseTest"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/QedeqKernelXml"/>
+	<classpathentry kind="lib" path="/QedeqLib/commons-logging-1.1.1.jar" sourcepath="/QedeqLib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="src" path="/QedeqKernelSeTest"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- author: Michael Meyling -->
+<!-- project: Hilbert II -->
+
+<!-- This is the Ant build file for building the Se release of project Hilbert II -->
+<project name="fastCloverBuild" default="all" basedir="../..">
+    <description>
+        Developer build for Hilbert II with clover but without pdf generation and release execution.   
+    </description>
+
+    <!-- test no slow methods -->
+    <property name="qedeq.test.fast"       value="true" />
+
+    <import file="releaseBuild.xml" />
+
+    <target name="clean">
+        <delete dir="${qedeq.dest.module}" failonerror="false" />
+        <mkdir dir="${qedeq.dest.module}" />
+        <delete dir="${qedeq.dist}" failonerror="false"/>
+        <mkdir dir="${qedeq.dist}" />
+        <delete dir="${qedeq.temp}" failonerror="false" />
+        <mkdir dir="${qedeq.temp}"/>
+        <clean name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase" />
+        <clean name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe" />
+        <clean name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo" />
+        <clean name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" />
+        <clean name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel" />
+        <clean name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_gui_se" />
+    </target>
+
+    <target name="test" description="run all tests" depends="testCompile">
+        <cloverTest  name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase"      classpath="classpath.common" fast="true" />
+        <cloverTest  name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe"  classpath="classpath.common" fast="true" />
+        <cloverTest  name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo"  classpath="classpath.common" fast="true" />
+        <cloverTest  name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" classpath="classpath.common" fast="true" />
+        <cloverTest  name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"   classpath="classpath.aggregate" fast="true" />
+    </target>
+ 
+    <target name="makePdfs" description="create PDF files out of certain *.tex test results" depends="test">
+        <!-- fake creation by GenerateLatexText -->
+        <mkdir dir="${qedeq.dest.module}/QedeqKernelBo/target/test-outdir/doc" />
+    </target>
+ 
+    <target name="release" depends="assemble">
+       <!-- don't do anything because we want to be fast.. -->   
+    </target>
+
+</project>
+
+

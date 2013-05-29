@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- author: Michael Meyling -->
+<!-- project: Hilbert II -->
+
+<!-- This is the Ant build file for building the developer version of the Se release of project Hilbert II -->
+<project name="fastBuild" default="all" basedir="../..">
+    <description>
+        Developer build for Hilbert II without clover, pdf generation and release build.   
+    </description>
+
+    <!-- test no slow methods -->
+    <property name="qedeq.test.fast"       value="true" />
+
+    <import file="releaseBuild.xml" />
+
+    <target name="clean">
+        <delete dir="${qedeq.dest}" failonerror="true" />
+        <mkdir dir="${qedeq.dest}" />
+        <delete dir="${qedeq.dest.module}" failonerror="true" />
+        <mkdir dir="${qedeq.dest.module}" />
+        <delete dir="${qedeq.dist}" failonerror="true"/>
+        <mkdir dir="${qedeq.dist}" />
+        <delete dir="${qedeq.temp}" failonerror="true" />
+        <mkdir dir="${qedeq.temp}"/>
+        <clean name="QedeqBase"      dir="${qedeq.dest.module}/QedeqBase" />
+        <clean name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe" />
+        <clean name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo" />
+        <clean name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" />
+        <clean name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel" />
+        <clean name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_gui_se" />
+    </target>
+
+    <target name="test" description="run all tests" depends="testCompile">
+        <!-- no clover -->
+        <utest       name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqBase"      classpath="classpath.common" fast="${qedeq.test.fast}" />
+        <utest       name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe"  classpath="classpath.common" fast="${qedeq.test.fast}" />
+        <utest       name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqBase"      classpath="classpath.common" fast="${qedeq.test.fast}" />
+        <utest       name="QedeqKernelSe"  dir="${qedeq.dest.module}/QedeqKernelSe"  classpath="classpath.common" fast="${qedeq.test.fast}" />
+        <utest       name="QedeqKernelBo"  dir="${qedeq.dest.module}/QedeqKernelBo"  classpath="classpath.common" fast="${qedeq.test.fast}" />
+        <utest       name="QedeqKernelXml" dir="${qedeq.dest.module}/QedeqKernelXml" classpath="classpath.common" fast="${qedeq.test.fast}" />
+
+<!-- takes too long:       
+        <utest       name="qedeq_kernel"   dir="${qedeq.dest.module}/qedeq_kernel"  />
+-->
+        <mkdir dir="${qedeq.dest.module}/qedeq_kernel/target/reports/junit/data" />
+        <mkdir dir="${qedeq.dest.module}/qedeq_kernel/target/reports/junit/report" />
+        <copy todir="${qedeq.dest.module}/qedeq_kernel/target/reports/junit/data">
+            <fileset dir="${qedeq.dest.module}/QedeqBase/target/reports/junit/data"       includes="*.xml,*.txt" />
+            <fileset dir="${qedeq.dest.module}/QedeqKernelSe/target/reports/junit/data"   includes="*.xml,*.txt" />
+            <fileset dir="${qedeq.dest.module}/QedeqKernelBo/target/reports/junit/data"   includes="*.xml,*.txt" />
+            <fileset dir="${qedeq.dest.module}/QedeqKernelXml/target/reports/junit/data"  includes="*.xml,*.txt" />
+        </copy>
+        <testReport reportdir="${qedeq.dest.module}/qedeq_kernel/target/reports/junit" />
+    </target>
+
+    <target name="release" depends="assemble">
+       <!-- don't do anything because we want to be fast.. -->   
+    </target>
+        
+</project>
+
+

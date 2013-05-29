@@ -1,0 +1,96 @@
+<FindBugsFilter>
+
+<!--  DOCUMENTATION SAMPLES, PRODUCTIVE SEE BELOW -->
+
+    <Match>
+         <Class name="com.foobar.ClassNotToBeAnalyzed" />
+    </Match>
+
+    <Match>
+        <Class name="com.foobar.ClassWithSomeBugsMatched" />
+        <Bug code="DE,UrF,SIC" />
+    </Match>
+
+    <!-- Match all doublecheck violations in these methods of "AnotherClass". -->
+    <Match>
+        <Class name="com.foobar.AnotherClass" />
+        <Or>
+            <Method name="nonOverloadedMethod" />
+            <Method name="frob" params="int,java.lang.String" returns="void" />
+            <Method name="blat" params="" returns="boolean" />
+        </Or>
+        <Bug code="DC" />
+    </Match>
+
+    <!-- A method with a dead local store false positive (medium priority). -->
+    <Match>
+        <Class name="com.foobar.MyClass" />
+        <Method name="someMethod" />
+        <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+        <Priority value="2" />
+    </Match>
+
+<!--  PRODUCTIVE -->
+
+    <!-- these methods are all depricated -->
+    <Match>
+      <Class name="org.qedeq.base.io.IoUtility"/>
+        <Bug pattern="DM_DEFAULT_ENCODING" /> 
+    </Match>
+
+    <!-- we don't want to correct this code -->
+    <Match>
+        <Package name="furbelow" />
+    </Match>
+
+    <Match>
+      <Class name="org.qedeq.kernel.bo.service.unicode.ProofLineData"/>
+      <Or> 
+        <Bug pattern="EI_EXPOSE_REP" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+      </Or> 
+    </Match>
+
+    <Match>
+      <Class name="org.qedeq.kernel.bo.service.unicode.ProofLineData"/>
+      <Or> 
+        <Bug pattern="EI_EXPOSE_REP" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+      </Or> 
+    </Match>
+    
+    <Match>
+      <OR>
+        <Class name="org.qedeq.gui.se.pane.PreferencesDialog"/>
+        <Class name="org.qedeq.base.io.IoUtility"/>
+      </OR>
+      <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" />
+    </Match>
+
+    <Match>
+      <Class name="org.qedeq.gui.se.control.ExitAction"/>
+      <Bug pattern="DM_EXIT" />
+    </Match>
+
+    <!--  If the key dosn't exist we want to return null -->
+    <Match>
+      <Class name="org.qedeq.kernel.xml.handler.common.SimpleAttributes" />
+      <Bug pattern="NP_BOOLEAN_RETURN_NULL" />
+    </Match>
+
+    <!--  we think the equals methods are ok for these classes -->
+    <Match>
+      <OR>
+        <Class name="org.qedeq.base.io.Version" />
+        <Class name="org.qedeq.kernel.bo.service.PluginCallImpl"/>
+      </OR>
+      <Bug pattern="EQ_UNUSUAL" />
+    </Match>
+
+    <!-- even if it is a redundant null check we want to be extra save especially here -->
+    <Match>
+      <Class name="org.qedeq.kernel.bo.service.logic.FormalProofCheckerExecutor" />
+      <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
+    </Match>
+
+</FindBugsFilter>
